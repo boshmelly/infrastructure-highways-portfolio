@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>illas Recruiter | Job Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:     #0d0d0d;
+      --paper:   #f5f0e8;
+      --card:    #ffffff;
+      --accent:  #c0392b;
+      --mid:     #6b6560;
+      --rule:    #d8d0c4;
+      --green:   #1a7f4b;
+      --amber:   #b07800;
+      --tag-bg:  #eee8de;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 2px solid var(--ink);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--paper);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .last-updated {
+      font-size: 0.72rem;
+      color: var(--mid);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .btn-cv {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid var(--ink);
+      padding: 0.4rem 1rem;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-cv:hover { background: var(--ink); color: var(--paper); }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      background: var(--ink);
+      color: var(--paper);
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      padding: 0.9rem 2rem;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .stat-pill .num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f5c842;
+    }
+
+    .stat-pill .lbl {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--rule);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--mid);
+      margin-right: 0.5rem;
+    }
+
+    .filter-btn {
+      font-size: 0.72rem;
+      padding: 0.35rem 0.9rem;
+      border: 1px solid var(--rule);
+      background: transparent;
+      color: var(--mid);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    /* SETUP NOTICE */
+    .setup-notice {
+      margin: 2rem;
+      border: 2px dashed var(--rule);
+      padding: 1.5rem 2rem;
+      background: var(--card);
+    }
+
+    .setup-notice h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.7rem;
+    }
+
+    .setup-notice p { font-size: 0.88rem; color: var(--mid); margin-bottom: 0.4rem; }
+    .setup-notice code {
+      background: var(--paper);
+      padding: 2px 6px;
+      font-size: 0.82rem;
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+    }
+
+    /* JOB GRID */
+    .jobs-container {
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.2rem;
+    }
+
+    /* JOB CARD */
+    .job-card {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+
+    .job-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-color: var(--mid);
+    }
+
+    .job-card.status-applied { border-left: 3px solid var(--green); }
+    .job-card.status-dismissed { opacity: 0.45; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .match-badge {
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      line-height: 1;
+      min-width: 56px;
+      text-align: right;
+    }
+
+    .match-badge.high  { color: var(--green); }
+    .match-badge.mid   { color: var(--amber); }
+    .match-badge .pct  { font-size: 0.65rem; font-family: 'DM Sans', sans-serif; }
+
+    .job-title-link {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none;
+      line-height: 1.3;
+    }
+
+    .job-title-link:hover { color: var(--accent); }
+
+    .company {
+      font-size: 0.82rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.76rem;
+      color: var(--mid);
+    }
+
+    .meta-row span::before { content: ''; }
+
+    /* MATCH TAGS */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      background: var(--tag-bg);
+      color: var(--mid);
+      padding: 2px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 1px;
+    }
+
+    /* ACTIONS */
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    .btn-action {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--rule);
+      background: transparent;
+      color: var(--mid);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .btn-action:hover { border-color: var(--ink); color: var(--ink); }
+
+    .btn-action.applied {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .btn-action.dismissed {
+      background: var(--mid);
+      color: white;
+      border-color: var(--mid);
+    }
+
+    .btn-apply {
+      margin-left: auto;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.4rem 1rem;
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-apply:hover { background: var(--accent); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--mid);
+    }
+
+    .empty-state h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: 0.7rem;
+      color: var(--ink);
+    }
+
+    .empty-state p { font-size: 0.9rem; line-height: 1.7; max-width: 440px; margin: 0 auto; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.72rem;
+      color: var(--mid);
+      border-top: 1px solid var(--rule);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 680px) {
+      header { padding: 1rem; }
+      .stats-bar { gap: 0; }
+      .stat-pill { padding: 0.7rem 1rem; }
+      .filters { padding: 0.8rem 1rem; }
+      .jobs-container { padding: 1rem; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">illas Recruiter</div>
+    <div style="font-size:0.68rem;color:var(--mid);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">Ola Mellila | Infrastructure and Highways</div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="last-updated">Loading...</span>
+    <a href="cv.html" class="btn-cv" target="_blank">View CV</a>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat-pill"><div class="num" id="stat-total">0</div><div class="lbl">Total Jobs</div></div>
+  <div class="stat-pill"><div class="num" id="stat-new">0</div><div class="lbl">New</div></div>
+  <div class="stat-pill"><div class="num" id="stat-applied">0</div><div class="lbl">Applied</div></div>
+  <div class="stat-pill"><div class="num" id="stat-high">0</div><div class="lbl">90%+ Match</div></div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="new">New</button>
+  <button class="filter-btn" data-filter="applied">Applied</button>
+  <button class="filter-btn" data-filter="dismissed">Dismissed</button>
+</div>
+
+<div id="setup-notice" class="setup-notice" style="display:none">
+  <h3>Setup Required</h3>
+  <p>No jobs yet. The recruiter agent needs Adzuna API keys to search for jobs.</p>
+  <p>1. Register free at <strong>developer.adzuna.com</strong> to get your App ID and App Key.</p>
+  <p>2. Add secrets to your GitHub repo: <code>ADZUNA_APP_ID</code> and <code>ADZUNA_APP_KEY</code>.</p>
+  <p>3. Run the workflow manually from GitHub Actions, or wait for the daily 07:00 UTC run.</p>
+</div>
+
+<div class="jobs-container" id="jobs-grid">
+  <div class="empty-state">
+    <h3>Loading jobs...</h3>
+    <p>Fetching your personalised job matches.</p>
+  </div>
+</div>
+
+<footer>illas Recruiter | Daily job search for Ola Mellila | Powered by Adzuna API | 75%+ match threshold</footer>
+
+<script>
+  // Status stored in localStorage — keyed by job id
+  const LS_KEY = 'illas_job_status';
+
+  function getStatuses() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
+    catch { return {}; }
+  }
+
+  function setStatus(id, status) {
+    const s = getStatuses();
+    s[id] = status;
+    localStorage.setItem(LS_KEY, JSON.stringify(s));
+  }
+
+  let allJobs = [];
+  let activeFilter = 'all';
+
+  function effectiveStatus(job) {
+    const s = getStatuses();
+    return s[job.id] || job.status || 'new';
+  }
+
+  function renderStats(jobs) {
+    const statuses = getStatuses();
+    const total   = jobs.length;
+    const newJobs = jobs.filter(j => (statuses[j.id] || j.status) === 'new').length;
+    const applied = jobs.filter(j => (statuses[j.id] || j.status) === 'applied').length;
+    const high    = jobs.filter(j => j.match_score >= 90).length;
+
+    document.getElementById('stat-total').textContent   = total;
+    document.getElementById('stat-new').textContent     = newJobs;
+    document.getElementById('stat-applied').textContent = applied;
+    document.getElementById('stat-high').textContent    = high;
+  }
+
+  function renderJobs(jobs) {
+    const grid = document.getElementById('jobs-grid');
+    const filtered = jobs.filter(j => {
+      if (activeFilter === 'all') return effectiveStatus(j) !== 'dismissed';
+      return effectiveStatus(j) === activeFilter;
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state">
+        <h3>${activeFilter === 'all' ? 'No jobs yet' : 'None in this category'}</h3>
+        <p>${activeFilter === 'all'
+          ? 'Add your Adzuna API keys to GitHub secrets and trigger the recruiter workflow to populate jobs.'
+          : 'Switch to another filter to see more jobs.'}</p>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(job => {
+      const status = effectiveStatus(job);
+      const isHigh = job.match_score >= 90;
+      const tags   = (job.match_reasons || []).slice(0, 5).map(r => `<span class="tag">${r}</span>`).join('');
+      const closing = job.closing_date
+        ? `<span>Closes ${job.closing_date}</span>`
+        : '';
+
+      return `<div class="job-card status-${status}" id="card-${job.id}">
+        <div class="card-top">
+          <div>
+            <a href="${job.url || '#'}" class="job-title-link" target="_blank" rel="noopener">${job.title}</a>
+            <div class="company">${job.company}</div>
+          </div>
+          <div class="match-badge ${isHigh ? 'high' : 'mid'}">
+            ${job.match_score}<span class="pct">%</span>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <span>${job.location}</span>
+          <span>${job.salary || 'Salary not stated'}</span>
+          ${closing}
+          <span style="opacity:0.5">${job.source || 'adzuna'}</span>
+        </div>
+
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+
+        <div class="card-actions">
+          <button class="btn-action ${status === 'applied' ? 'applied' : ''}"
+            onclick="toggleStatus('${job.id}', 'applied')">
+            ${status === 'applied' ? 'Applied' : 'Mark Applied'}
+          </button>
+          <button class="btn-action ${status === 'dismissed' ? 'dismissed' : ''}"
+            onclick="toggleStatus('${job.id}', 'dismissed')">
+            Dismiss
+          </button>
+          <a href="${job.url || '#'}" class="btn-apply" target="_blank" rel="noopener">Apply</a>
+        </div>
+      </div>`;
+    }).join('');
+
+    renderStats(jobs);
+  }
+
+  function toggleStatus(id, targetStatus) {
+    const current = getStatuses()[id] || 'new';
+    const next = current === targetStatus ? 'new' : targetStatus;
+    setStatus(id, next);
+    renderJobs(allJobs);
+  }
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      renderJobs(allJobs);
+    });
+  });
+
+  // Load data
+  async function init() {
+    try {
+      const res  = await fetch('jobs.json?t=' + Date.now());
+      const data = await res.json();
+      allJobs    = data.jobs || [];
+
+      const lu = data.last_updated
+        ? new Date(data.last_updated).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        : 'Never';
+      document.getElementById('last-updated').textContent = 'Updated ' + lu;
+
+      if (allJobs.length === 0) {
+        document.getElementById('setup-notice').style.display = 'block';
+      }
+
+      renderStats(allJobs);
+      renderJobs(allJobs);
+    } catch (e) {
+      document.getElementById('jobs-grid').innerHTML = `<div class="empty-state">
+        <h3>Could not load jobs</h3>
+        <p>Make sure jobs.json exists and the page is served over HTTP (not opened as a local file).</p>
+      </div>`;
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

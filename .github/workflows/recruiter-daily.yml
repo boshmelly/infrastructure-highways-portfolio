@@ -1,0 +1,34 @@
+name: illas Recruiter Agent
+
+on:
+  schedule:
+    # Runs daily at 07:00 UTC
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recruit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run recruiter agent
+        env:
+          ADZUNA_APP_ID:  ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+        run: node recruiter/agent.js
+
+      - name: Commit updated jobs
+        run: |
+          git config user.name  "illas-recruiter[bot]"
+          git config user.email "recruiter-bot@noreply.github.com"
+          git add recruiter/jobs.json
+          if git diff --cached --quiet; then
+            echo "No job changes to commit."
+          else
+            git commit -m "chore: recruiter agent update $(date +%Y-%m-%d)"
+            git push
+          fi
